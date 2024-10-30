@@ -6,7 +6,7 @@ from file_pages.download import download_dialog
 from file_pages.login import login_dialog
 
 
-st.title("Welcome to the RCOA Alternative Analysis App")
+st.title("Welcome to the RCoA Logbook Analyser")
 st.write(f"Current export file: {st.session_state.export_filename}")
 
 filesize = len(st.session_state.export_filedata)

@@ -26,6 +26,9 @@ def main():
 
     st.set_page_config(
         layout="wide",
+        page_title="RCoA Logbook Analyser",
+        page_icon=":book:",
+
     )
 
     def logout():
