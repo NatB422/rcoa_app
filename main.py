@@ -46,6 +46,7 @@ def main():
             st.Page("file_pages/view.py", title="View"),
         ],
         "About": [
+            st.Page("about_pages/how_to.py", title="How to use this app"),
             st.Page("about_pages/coffee.py", title="Coffee?"),
         ]
     }
