@@ -45,6 +45,9 @@ def main():
             st.Page("file_pages/home.py", title="Home", default=True),
             st.Page("file_pages/view.py", title="View"),
         ],
+        "About": [
+            st.Page("about_pages/coffee.py", title="Coffee?"),
+        ]
     }
     if st.session_state.logged_in:
         nav_dict[f"{st.session_state.displayname}'s Account"] = [logout_page]
