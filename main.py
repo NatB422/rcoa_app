@@ -42,7 +42,7 @@ def main():
 
     nav_dict = {
         "Logbook File": [
-            st.Page("file_pages/home.py", title="Home"),
+            st.Page("file_pages/home.py", title="Home", default=True),
             st.Page("file_pages/view.py", title="View"),
         ],
     }
