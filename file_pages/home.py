@@ -8,6 +8,8 @@ from file_pages.login import login_dialog
 
 st.title("Welcome to the RCoA Logbook Analyser")
 st.write(f"Current export file: {st.session_state.export_filename}")
+if st.session_state.file_created:
+    st.write(f"Initial file creation time: {st.session_state.file_created}")
 
 filesize = len(st.session_state.export_filedata)
 kb = round(filesize / 1_024, 1)
