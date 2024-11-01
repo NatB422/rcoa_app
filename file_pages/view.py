@@ -4,7 +4,6 @@ import pandas
 
 @st.cache_data
 def generate_dataframes(data):
-    print("Generating dataframes")
     file_obj = io.BytesIO(data)
     df_dicts = pandas.read_excel(file_obj, sheet_name=None)
 
