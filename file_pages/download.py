@@ -23,7 +23,7 @@ def download_dialog():
             created_time = get_excel_file_creation_time(filedata)
             st.session_state.file_created = created_time.strftime("%Y-%m-%d %H:%M:%S")
         except Exception:
-            pass
+            st.session_state.file_created = ""
 
 
         download_placeholder.success("Download completed")
