@@ -69,6 +69,4 @@ def get_account_details(session:requests.Session):
     account_section = main_section.find_all(name="section")[0]
     html_content = str(account_section)
 
-    print(html_content)
-
     return html_content
