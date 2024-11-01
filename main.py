@@ -39,6 +39,7 @@ def main():
     }
     if st.session_state.logged_in:
         nav_dict[f"{st.session_state.displayname}'s RCoA Account"] = [
+            st.Page("file_pages/account.py", title="Details", icon=":material/person:"),
             st.Page(logout, title="Log out", icon=":material/logout:"),
         ]
 
