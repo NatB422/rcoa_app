@@ -37,12 +37,14 @@ def main():
 
     nav_dict = {
         "Logbook File": [
-            st.Page("file_pages/home.py", title="Home", default=True),
-            st.Page("file_pages/view.py", title="View"),
+            st.Page("file_pages/home.py", title="Home", default=True, icon=":material/home:"),
+            st.Page("file_pages/view.py", title="View", icon=":material/table:"),
+        ],
+        "Analysis": [
         ],
         "About": [
-            st.Page("about_pages/how_to.py", title="How to use this app"),
-            st.Page("about_pages/coffee.py", title="Coffee?"),
+            st.Page("about_pages/how_to.py", title="How to use this app", icon=":material/book:"),
+            st.Page("about_pages/coffee.py", title="Coffee?", icon=":material/coffee:"),
         ]
     }
     if st.session_state.logged_in:
@@ -53,7 +55,6 @@ def main():
 
     pg = st.navigation(nav_dict)
     pg.run()
-
 
 
 if __name__ == "__main__":
