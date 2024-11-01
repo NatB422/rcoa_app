@@ -3,6 +3,7 @@ import time
 import streamlit as st
 
 from library.rcoa import download_logbook, refresh_logbook
+from library.file_properties import get_excel_file_creation_time
 
 
 @st.dialog("Download")
@@ -17,6 +18,14 @@ def download_dialog():
         filename, filedata = download_logbook(st.session_state.rcoa_session)
         st.session_state.export_filedata = filedata
         st.session_state.export_filename = filename
+
+        try:
+            created_time = get_excel_file_creation_time(filedata)
+            st.session_state.file_created = created_time.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            st.session_state.file_created = ""
+
+
         download_placeholder.success("Download completed")
 
         time.sleep(1)

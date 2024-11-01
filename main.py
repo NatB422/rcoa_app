@@ -11,6 +11,7 @@ SESSION_STATE_DEFAULTS = {
     # File to analyse
     "export_filename": "",
     "export_filedata": b"",
+    "file_created": "",
 }
 
 def main():

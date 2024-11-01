@@ -1,6 +1,8 @@
 import streamlit as st
 import time
 
+from library.file_properties import get_excel_file_creation_time
+
 
 @st.dialog("Upload")
 def upload_dialog():
@@ -13,6 +15,12 @@ def upload_dialog():
 
         st.session_state.export_filename = uploaded_file.name
         st.session_state.export_filedata = filedata
+
+        try:
+            created_time = get_excel_file_creation_time(filedata)
+            st.session_state.file_created = created_time.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            st.session_state.file_created = ""
 
         st.success("File uploaded")
         time.sleep(1)
