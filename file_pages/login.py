@@ -1,18 +1,12 @@
-
+import time
 import streamlit as st
 
 from library.rcoa import create_rcoa_session
 
 
 def perform_login():
+    placeholder = st.empty()
 
-    session = create_rcoa_session(
-        st.session_state.username,
-        st.session_state.password,
-    )
-
-    st.session_state.rcoa_session = session
-    st.session_state.displayname = session.cookies.get("name").replace("_", " ")
 
 
 @st.dialog("Login")
@@ -32,10 +26,24 @@ def login_dialog():
             st.toast("Please specify a username")
             return
 
+        # Remember for later
         st.session_state.username = username
         st.session_state.password = password
 
-        perform_login()
+        placeholder = st.empty()
+        # Perform the login
+        placeholder.success("Logging into RCoA portal")
+        session = create_rcoa_session(
+            st.session_state.username,
+            st.session_state.password,
+        )
+
+        # Finish up
+        st.session_state.rcoa_session = session
+        st.session_state.displayname = session.cookies.get("name", st.session_state.username).replace("_", " ")
         st.session_state.logged_in = True
+
+        placeholder.success(f"Logged in as {st.session_state.displayname}")
+        time.sleep(1)
 
         st.rerun()
