@@ -38,9 +38,11 @@ def main():
     nav_dict = {
         "Logbook File": [
             st.Page("file_pages/home.py", title="Home", default=True, icon=":material/home:"),
-            st.Page("file_pages/view.py", title="View", icon=":material/table:"),
+            st.Page("file_pages/view.py", title="Tabular View", icon=":material/table:"),
         ],
         "Analysis": [
+            st.Page("analysis_pages/normalised.py", title="Normalised Data"),
+            st.Page("analysis_pages/summary.py", title="Summary"),
         ],
         "About": [
             st.Page("about_pages/how_to.py", title="How to use this app", icon=":material/book:"),
