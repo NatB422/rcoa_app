@@ -23,6 +23,21 @@ supervision_levels = DataFrame({
     "Supervision Level": [v for k,v in SUPERVISION_LEVEL_LOOKUP.items()]
 })
 
+AGE_CATEGORIES = {
+    'Age <1':    lambda x: x < 1,
+    'Age 1-5':   lambda x: 1 <= x < 6,
+    'Age 6-15':  lambda x: 6 <= x < 16,
+    'Age 16-80': lambda x:16 <= x < 81,
+    'Age 80+':   lambda x:81 <= x,
+}
+
+TIME_CATEGORIES = {
+    "Morning (0800-1300)": "morning-0800-1300",
+    "Afternoon (1300-1800)": "afternoon-1300-1800",
+    "Evening (1800-2200)": "evening-1800-2200",
+    "Night (2200-0800)": "night-2200-0800",
+}
+
 NORMALISED_COLUMNS = [
     "Case ID",
     "Case Type",
@@ -31,16 +46,10 @@ NORMALISED_COLUMNS = [
     "Age",
     "Primary Specialty",
     "Secondary Specialty",
+    "Priority",
     "Supervision",
 ]
 
-AGE_CATEGORIES = {
-    'Age <1':    lambda x: x < 1,
-    'Age 1-5':   lambda x: 1 <= x < 6,
-    'Age 6-15':  lambda x: 6 <= x < 16,
-    'Age 16-80': lambda x:16 <= x < 81,
-    'Age 80+':   lambda x:81 <= x,
-}
 
 def normalise_all_tables(case_dataframes:"dict[str, DataFrame]"):
 
@@ -62,14 +71,22 @@ def normalise_all_tables(case_dataframes:"dict[str, DataFrame]"):
     # Join with lookup data
     frame = frame.merge(supervision_levels, left_on="Supervision", right_on="Supervision")
 
+    # Column conversions
     frame['Date'] = to_datetime(frame['Date'])
     frame['Age'] = frame['Age'].apply(age_in_years)
+
+    frame["Priority"] = frame["Priority"].apply(lambda x: (x or "day case").capitalize())
+
+    # New columns
     for age_category, age_filter in AGE_CATEGORIES.items():
         frame[age_category] = frame["Age"].apply(age_filter)
 
     for supervision_level in SUPERVISION_LEVEL_LOOKUP.values():
         shortname = SUPERVISION_LEVELS_SHORTNAME.get(supervision_level, "Uncategorised")
         frame[shortname] = frame["Supervision Level"].apply(lambda x: x == supervision_level)
+
+    for time_category, time_value in TIME_CATEGORIES.items():
+        frame[time_category.capitalize()] = frame["Time"].apply( lambda x: time_value in x if x else None)
 
     return frame
 
@@ -112,6 +129,7 @@ def normalise_case_intensive(df:DataFrame):
     cases["Case Type"] =  "Case Anaesthetic"
     cases["Primary Specialty"] = None
     cases["Secondary Specialty"] = None
+    cases["Priority"] = None
 
     # Rename columns
     cases = cases.rename(columns={'ID': "Case ID"})
@@ -134,6 +152,7 @@ def normalise_case_acute_pain(df:DataFrame):
     cases["Case Type"] =  "Case Acute Pain"
     cases["Primary Specialty"] = None
     cases["Secondary Specialty"] = None
+    cases["Priority"] = None
 
     # Rename columns
     cases = cases.rename(columns={'ID': "Case ID"})
@@ -155,6 +174,7 @@ def normalise_stand_alone(df:DataFrame):
     cases["Time"] = None
     cases["Age"] = None
     cases["Secondary Specialty"] = None
+    cases["Priority"] = None
 
     # Rename columns
     cases = cases.rename(columns={'Specialty': "Primary Specialty"})
@@ -176,6 +196,7 @@ def normalise_session(df:DataFrame):
     cases["Case Type"] =  "Session"
     cases["Age"] = None
     cases["Secondary Specialty"] = None
+    cases["Priority"] = None
 
     # Rename columns
     cases = cases.rename(columns={'Specialty (only if Activity=Theatre)': "Primary Specialty"})
