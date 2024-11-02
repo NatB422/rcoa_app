@@ -4,11 +4,6 @@ import streamlit as st
 from library.rcoa import create_rcoa_session
 
 
-def perform_login():
-    placeholder = st.empty()
-
-
-
 @st.dialog("Login")
 def login_dialog():
     # Concept: store credentials somwhere to be loaded as secrets and pre-loaded here?
