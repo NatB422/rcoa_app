@@ -4,6 +4,7 @@ import streamlit as st
 
 from library.rcoa import download_logbook, refresh_logbook
 from library.file_properties import get_excel_file_creation_time
+from utils.data_frame import get_normalised_data
 
 
 @st.dialog("Download")
@@ -29,6 +30,7 @@ def download_dialog():
         download_placeholder.success("Download completed")
 
         time.sleep(1)
+        get_normalised_data.clear()
         st.rerun()
 
     if st.button("Refresh logbook export", disabled=False):

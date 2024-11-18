@@ -12,6 +12,9 @@ SESSION_STATE_DEFAULTS = {
     "export_filename": "",
     "export_filedata": b"",
     "file_created": "",
+    # Summary page
+    "summary_date_selection": "Date selection: None",
+    "summary_pdf_data": b"",
 }
 
 def main():
