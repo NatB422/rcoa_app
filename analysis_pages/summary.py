@@ -1,9 +1,10 @@
 import datetime
 import streamlit as st
-import pandas as pd
 
 from utils.data_frame import get_normalised_data
-from library.normalise_data import AGE_CATEGORIES, SUPERVISION_LEVELS_SHORTNAME, TIME_CATEGORIES
+from library.create_summary_dataframes import prepare_data
+from library.pdf_utils import export_to_pdf
+
 
 normal_df = get_normalised_data()
 
@@ -13,8 +14,9 @@ if False and st.button("Recalculate"):
     get_normalised_data.clear()
     st.rerun()
 
+
 # Date selection
-with st.expander("Date selection"):
+with st.expander("Date selection") as exp:
     col0, col1, col2 = st.columns(3)
     filtered = col0.checkbox("Apply date filter")
     start_date = col1.date_input(
@@ -27,104 +29,67 @@ with st.expander("Date selection"):
         value=datetime.datetime(2024, 7, 31),
         format="YYYY-MM-DD",
     )
-    # st.write("Period:", start_date.isoformat(), " to ", end_date.isoformat())
 
     if filtered:
         start_datetime = datetime.datetime(start_date.year, start_date.month, start_date.day)
         end_datetime = datetime.datetime(end_date.year, end_date.month, end_date.day)
         normal_df = normal_df[normal_df["Date"] >= start_datetime][normal_df["Date"] <= end_datetime]
 
-# Summary tables
+# Calculate data based on the date filter
+ALL_DATA_FRAMES = prepare_data(normal_df)
+
+# Display summary
+if filtered:
+    time_period_text = f"{start_date.isoformat()} to {end_date.isoformat()}"
+else:
+    time_period_text =  "All records"
+
 grand_total = len(normal_df)
-st.subheader(f"Total number of anaesthetics given in this period : {grand_total}")
+summary_line = f"Total number of anaesthetics given in this period : {grand_total}"
+
+col1, col2, col3 = st.columns((0.5,0.25,0.25))
+col1.subheader(f"Period: {time_period_text}")
+
+# Add PDF Export
+if col2.button("Export as PDF"):
+    st.session_state["summary_pdf_data"] = b""
+    pdf_data = export_to_pdf(f"Period: {time_period_text}<br/>{summary_line}", ALL_DATA_FRAMES)
+    st.session_state["summary_pdf_data"] = pdf_data
+
+if st.session_state["summary_pdf_data"]:
+    filename = f"logbook_{time_period_text.lower().replace(' ', '_')}.pdf"
+    col3.download_button("Download", st.session_state["summary_pdf_data"], filename)
+
+
+# Summary tables
+st.subheader(summary_line)
 
 # Supervision totals
 with st.expander("Supervision level"):
-    supervision_df = normal_df.groupby("Supervision Level").size().to_frame('Quantity')
+    supervision_df = ALL_DATA_FRAMES["Supervision Level"]
     st.dataframe(supervision_df)
-
-# COMMON AGGREGATE COLUMNS
-totals_counter = {"Case ID": "count"}
-sum_supervision_levels = {
-    supervision_level: "sum"
-    for supervision_level in sorted(set(SUPERVISION_LEVELS_SHORTNAME.values()))
-}
-sum_ages = {
-    age_category: "sum"
-    for age_category in AGE_CATEGORIES
-}
 
 # Primary Specialty totals
 with st.expander("Primary Specialty"):
-    primary_df = (normal_df
-        .groupby("Primary Specialty")
-        .agg(dict(
-            **totals_counter,
-            **sum_supervision_levels,
-            **sum_ages,
-        ))
-        .rename(columns={"Case ID": "Quantity"})
-    )
-    primary_df.insert(1, "%", round(100 * primary_df["Quantity"] / grand_total), 0)
+    primary_df = ALL_DATA_FRAMES["Primary Specialty"]
     st.dataframe(primary_df)
-
 
 # Secondary Specialty totals
 with st.expander("Secondary Specialty"):
-    secondary_df = (normal_df
-        .groupby("Secondary Specialty")
-        .agg(dict(
-            **totals_counter,
-            **sum_supervision_levels,
-            **sum_ages,
-        ))
-        .rename(columns={"Case ID": "Quantity"})
-    )
-    secondary_df.insert(1, "%", round(100 * primary_df["Quantity"] / grand_total), 0)
+    secondary_df = ALL_DATA_FRAMES["Secondary Specialty"]
     st.dataframe(secondary_df)
 
 # Time of day totals
 with st.expander("Time of Day and level of supervision"):
-    time_df = None
-    source_df = normal_df
-    for time_category in TIME_CATEGORIES:
-        source_df["Time Period"] = time_category.capitalize()
-        tc_df = (source_df
-            .where(source_df[time_category.capitalize()])
-            .groupby("Time Period")
-            .agg(dict(
-                **sum_supervision_levels,
-                **totals_counter,
-            ))
-            .rename(columns={"Case ID": "Totals"})
-        )
-        print(tc_df)
-
-        if time_df is None:
-            time_df = tc_df
-        else:
-            time_df = pd.concat([time_df, tc_df])
-
+    time_df = ALL_DATA_FRAMES["Time Period"]
     st.dataframe(time_df)
 
 # Priority totals
 with st.expander("Priority and level of supervision"):
-    priority_df = (normal_df
-        .groupby("Priority", dropna=False)
-        .agg(dict(
-            **sum_supervision_levels,
-            **totals_counter,
-        ))
-        .rename(columns={"Case ID": "Totals"})
-    )
+    priority_df = ALL_DATA_FRAMES["Priority"]
     st.dataframe(priority_df)
 
 # Working pattern
 with st.expander("Working pattern"):
-    working_df = normal_df
-    working_df["DayType"] = working_df["Date"].apply(lambda x: "Weekday" if x.dayofweek < 5 else "Weekend")
-    working_df["Day"] = working_df.apply(lambda row: row["Morning (0800-1300)"] or row["Afternoon (1300-1800)"], axis=1)
-    working_df["Evening"] = working_df["Evening (1800-2200)"]
-    working_df["Night"] = working_df["Night (2200-0800)"]
-
-    st.dataframe(working_df.groupby("DayType").agg(dict(Day="sum", Evening="sum", Night="sum")))
+    working_df = ALL_DATA_FRAMES["Working Pattern"]
+    st.dataframe(working_df)

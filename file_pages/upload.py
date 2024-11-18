@@ -2,6 +2,7 @@ import streamlit as st
 import time
 
 from library.file_properties import get_excel_file_creation_time
+from utils.data_frame import get_normalised_data
 
 
 @st.dialog("Upload")
@@ -24,6 +25,8 @@ def upload_dialog():
 
         st.success("File uploaded")
         time.sleep(1)
+
+        get_normalised_data.clear()
         st.rerun()
 
 
